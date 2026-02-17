@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 def garden_operations() -> None:
     """List of errors possible for these operations"""
     # ValueError: trying to convert a bad string to int

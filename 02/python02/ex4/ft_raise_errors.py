@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class GardenError(Exception):
     def __init__(self, message: str = "GardenError") -> None:
         self.message = message
@@ -30,25 +28,25 @@ def check_plant_health(plant_name: str, water_level: int,
         if (sunlight_hours < 2):
             raise PlantError(f"Sunlight hours {sunlight_hours} is too low \
 (min 2)")
-        print(f"Plant {plant_name} is healthy!")
+        return f"Plant {plant_name} is healthy!"
     except PlantError as e:
-        print(f"Error: {e}")
+        return f"Error: {e}"
 
 
 def test_plant_checks() -> None:
     """test fonction check_plant_health"""
     print("=== Garden Plant Health Checker ===")
     print("\nTesting good values...")
-    check_plant_health("Basilic", 5, 6)
+    print(check_plant_health("Basilic", 5, 6))
 
     print("\nTesting empty plant name...")
-    check_plant_health(None, 5, 6)
+    print(check_plant_health(None, 5, 6))
 
     print("\nTesting bad water level...")
-    check_plant_health("Cactus", 15, 6)
+    print(check_plant_health("Cactus", 15, 6))
 
     print("\nTesting bad sunlight hours...")
-    check_plant_health("Cactus", 5, -8)
+    print(check_plant_health("Cactus", 5, -8))
 
     print("\nAll error raising tests completed!")
 

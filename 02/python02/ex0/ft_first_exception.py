@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-def check_temperature(temp_str: int) -> int:
+def check_temperature(temp_str: str) -> int:
     """Verify if the input temperature is a valid number and safe
     for plant grow."""
     try:
@@ -15,16 +13,19 @@ def check_temperature(temp_str: int) -> int:
             return temp_str
     except ValueError:
         print(f"Error: {temp_str} is not a valid number")
+        return -1
 
 
 def main() -> None:
     print("=== Garden Temperature Checker ===")
     print()
-    check_temperature("24")
+    check_temperature("25")
     print()
-    check_temperature("non")
+    check_temperature("abc")
     print()
-    check_temperature("43")
+    check_temperature("100")
+    print()
+    check_temperature("-50")
     print()
     print("All tests completed - program didn't crash!")
 

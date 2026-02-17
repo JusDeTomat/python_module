@@ -2,9 +2,9 @@
 
 def list_comprehension(info):
     high_scorers = [name for name, data in info.items()
-                    if data["score"] > 2000]
-    doubled = [data["score"] * 2 for data in info.values()]
-    active = [name for name, data in info.items() if data["active"]]
+                    if data.get("score", 0) > 2000]
+    doubled = [data.get("score", 0) * 2 for data in info.values()]
+    active = [name for name, data in info.items() if data.get("active", False)]
 
     print("\n=== List Comprehension Examples ===")
     print(f"High scorers (>2000): {high_scorers}")
@@ -13,10 +13,12 @@ def list_comprehension(info):
 
 
 def dict_comprehension(info):
-    player_scores = {name: data["score"] for name, data in info["player"]
-                     .items() if data["active"]}
-    achiv_counts = {name: len(data["achiv"]) for name, data in info["player"]
-                    .items() if data["active"]}
+    player_scores = {name: data.get("score", 0)
+                     for name, data in info["player"]
+                     .items() if data.get("active", False)}
+    achiv_counts = {name: len(data.get("achiv", 0))
+                    for name, data in info["player"]
+                    .items() if data.get("active", False)}
     dic_categories = {name: data for name, data in info["categories"].items()}
     print("\n=== Dict Comprehension Examples ===")
     print(f"Player scores: {player_scores}")
@@ -27,9 +29,9 @@ def dict_comprehension(info):
 def set_comprehension(info):
     dic_name = {name for name in info["player"].keys()}
     dic_achiv = {achiv for data in info["player"].values()
-                 for achiv in data["achiv"]}
+                 for achiv in data.get("achiv", 0)}
     dic_regions = {data["region"] for data in info["player"].values()
-                   if data["active"]}
+                   if data.get("active", False)}
     print("\n=== Set Comprehension Examples ===")
     print(f"Unique players: {dic_name}")
     print(f"Unique achievements: {dic_achiv}")
@@ -39,8 +41,8 @@ def set_comprehension(info):
 def combined_stat(info):
     nb_player = len(info["player"])
     nb_achiv = len({achiv for data in info["player"].values()
-                    for achiv in data["achiv"]})
-    nb_score = sum(data["score"] for data in info["player"].values())
+                    for achiv in data.get("achiv", 0)})
+    nb_score = sum(data.get("score", 0) for data in info["player"].values())
     top_name = max(info["player"], key=lambda name:
                    info["player"][name]["score"])
     print("\n=== Combined Analysis ===")

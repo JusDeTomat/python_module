@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class GardenError(Exception):
     def __init__(self,
                  message: str = "plant need to be str and water to") -> None:
