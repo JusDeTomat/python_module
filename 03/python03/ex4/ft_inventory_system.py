@@ -1,18 +1,15 @@
-#!/usr/bin/env python3
-
 import sys
 
 
-def parcing(arg):
+def parcing(arg: list) -> dict:
     inv = {}
     for e in arg:
         key, value = e.split(':')
-        # inv[key] = int(value)
         inv.update({key: int(value)})
     return inv
 
 
-def inventory_systeme(inv):
+def inventory_systeme(inv: dict) -> None:
     total = 0
     inv_key = inv.keys()
     for e in inv_key:
@@ -22,7 +19,7 @@ def inventory_systeme(inv):
     print(f"Unique item types: {len(inv_key)}")
 
 
-def current_inventory(reel_inv):
+def current_inventory(reel_inv: dict) -> None:
     print("\n=== Current Inventory ===")
     inv = reel_inv.copy()
     total = 0
@@ -38,11 +35,14 @@ def current_inventory(reel_inv):
             print(f"{name}: {qty} units ({percentage:.1f}%)")
 
 
-def inventory_stat(inv):
+def inventory_stat(inv: dict) -> None:
     inv_key = inv.keys()
     inv_value = inv.values()
-    inv_min = min(inv_value)
-    inv_max = max(inv_value)
+    inv_min = 0
+    inv_max = 0
+    if (len(inv_value) >= 1):
+        inv_min = min(inv_value)
+        inv_max = max(inv_value)
     print("\n=== Inventory Statistics ===")
     for e in inv_key:
         if (inv[e] == inv_max):
@@ -62,7 +62,7 @@ def inventory_stat(inv):
                 break
 
 
-def inventory_categories(inv):
+def inventory_categories(inv: dict) -> None:
     inv_key = inv.keys()
     moderate = {}
     scarce = {}
@@ -78,7 +78,7 @@ def inventory_categories(inv):
         print(f"Scarce: {scarce}")
 
 
-def suggestion_item(inv):
+def suggestion_item(inv: dict) -> None:
     inv_key = inv.keys()
     suggestion = []
     print("\n=== Management Suggestions ===")
@@ -88,7 +88,7 @@ def suggestion_item(inv):
     print(f"Restock needed: {suggestion}")
 
 
-def demo(inv, item):
+def demo(inv: dict, item: str) -> None:
     key = []
     value = []
     print("\n=== Dictionary Properties Demo ===")
