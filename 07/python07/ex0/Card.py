@@ -1,12 +1,13 @@
-import abc
+from abc import ABC, abstractmethod
 
 
-class Card():
+class Card(ABC):
     def __init__(self, name: str, const: int, rarity: str):
         self.name = name
-        self.const = const
+        self.cost = const
         self.rarity = rarity
 
+    @abstractmethod
     def play(self, game_state: dict) -> dict:
         pass
 
@@ -14,4 +15,4 @@ class Card():
         pass
 
     def is_playable(self, available_mana: int) -> bool:
-        pass
+        return available_mana > self.cost
