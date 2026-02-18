@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 import math
 
 
-def coordinate_system(value):
+def coordinate_system(value: tuple) -> None:
     if type(value) is str:
         old_value = value
         value = value.split(",")
@@ -22,7 +20,7 @@ def coordinate_system(value):
     print(f"Distance between (0, 0, 0) and {value}: {round(formula, 2)}")
 
 
-def unpaking_tuple(arg):
+def unpaking_tuple(arg: tuple) -> None:
     if (len(arg) == 3):
         x, y, z = arg
         print(f"Player at x={x}, y={y}, z={z}")

@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-
-def achievement_tracker(lst_player):
+def achievement_tracker(lst_player: list) -> None:
     for name, e in lst_player:
         print(f"Player {name} achievements: {e}")
 
 
-def achievement_analytics(lst_player):
+def achievement_analytics(lst_player: list) -> None:
     union_lst = set()
     same_lst = set()
     rare_lst = set()
@@ -20,7 +18,7 @@ def achievement_analytics(lst_player):
     print(f"Rare achievements (1 player): {rare_lst}\n")
 
 
-def versus(player1, player2):
+def versus(player1: dict, player2: dict) -> None:
     same_lst = set()
     player1_lst = set()
     player2_lst = set()

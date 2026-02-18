@@ -43,7 +43,7 @@ def combined_stat(info):
     nb_achiv = len({achiv for data in info["player"].values()
                     for achiv in data.get("achiv", 0)})
     nb_score = sum(data.get("score", 0) for data in info["player"].values())
-    top_name = max(info["player"], key=lambda name:
+    top_name = max(info.get("player", 0), key=lambda name:
                    info["player"][name]["score"])
     print("\n=== Combined Analysis ===")
     print(f"Total players: {nb_player}")

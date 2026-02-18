@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 import sys
 
 
-def commande():
+def commande() -> None:
     arg = [x for x in sys.argv]
     try:
         if (len(arg) == 1):
