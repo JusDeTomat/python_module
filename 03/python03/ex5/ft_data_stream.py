@@ -2,7 +2,7 @@ import random
 import time
 
 
-def event_generator(count):
+def event_generator(count: int) -> dict:
     """Generates a stream of random game events one by one."""
     actions = ["killed monster", "found treasure", "leveled up"]
     players = ["alice", "bob", "charlie", "david", "eve"]
@@ -14,7 +14,7 @@ def event_generator(count):
         yield {"id": i, "player": player, "level": level, "action": action}
 
 
-def fibonacci_gen(n):
+def fibonacci_gen(n: int) -> int:
     """Generates the first n Fibonacci numbers."""
     a, b = 0, 1
     for _ in range(n):
@@ -22,7 +22,7 @@ def fibonacci_gen(n):
         a, b = b, a + b
 
 
-def prime_gen(n):
+def prime_gen(n: int) -> bool:
     """Generates the first n prime numbers."""
     def is_prime(num):
         if num < 2:
@@ -40,17 +40,16 @@ def prime_gen(n):
 
 
 if (__name__ == "__main__"):
-    nb = 1000
-    nb_fibo = 10
-    nb_prime = 5
-    fibo_lst = []
-    first = True
-    high_level_count = 0
-    treasure_events = 0
-    levelup_events = 0
+    nb: int = 10000000
+    nb_fibo: int = 10
+    nb_prime: int = 5
+    fibo_lst: list = []
+    first: bool = True
+    high_level_count: int = 0
+    treasure_events: int = 0
+    levelup_events: int = 0
     print("=== Game Data Stream Processor ===")
-    start_time = time.time()
-    stream = event_generator(nb)
+    start_time: float = time.time()
     for event in event_generator(nb):
         if event["id"] <= 3:
             print(f"Event {event['id']}: Player {event['player']} (level \

@@ -14,11 +14,11 @@ def list_comprehension(info):
 
 def dict_comprehension(info):
     player_scores = {name: data.get("score", 0)
-                     for name, data in info["player"]
-                     .items() if data.get("active", False)}
-    achiv_counts = {name: len(data.get("achiv", 0))
-                    for name, data in info["player"]
-                    .items() if data.get("active", False)}
+                     for name, data in info["player"].items()
+                     if data.get("active", False)}
+    achiv_counts = {name: len(data.get("achiv", set()))
+                    for name, data in info["player"].items()
+                    if data.get("active", False)}
     dic_categories = {name: data for name, data in info["categories"].items()}
     print("\n=== Dict Comprehension Examples ===")
     print(f"Player scores: {player_scores}")
@@ -29,7 +29,7 @@ def dict_comprehension(info):
 def set_comprehension(info):
     dic_name = {name for name in info["player"].keys()}
     dic_achiv = {achiv for data in info["player"].values()
-                 for achiv in data.get("achiv", 0)}
+                 for achiv in data.get("achiv", set())}
     dic_regions = {data["region"] for data in info["player"].values()
                    if data.get("active", False)}
     print("\n=== Set Comprehension Examples ===")
@@ -41,16 +41,18 @@ def set_comprehension(info):
 def combined_stat(info):
     nb_player = len(info["player"])
     nb_achiv = len({achiv for data in info["player"].values()
-                    for achiv in data.get("achiv", 0)})
+                    for achiv in data.get("achiv", set())})
     nb_score = sum(data.get("score", 0) for data in info["player"].values())
-    top_name = max(info.get("player", 0), key=lambda name:
-                   info["player"][name]["score"])
+    top_name = max(info["player"].keys(),
+                   key=lambda name: info["player"][name].get("score", 0))
     print("\n=== Combined Analysis ===")
     print(f"Total players: {nb_player}")
     print(f"Total unique achievements: {nb_achiv}")
     print(f"Average score: {nb_score / nb_player}")
-    print(f"Top performer: {top_name} ({info["player"][top_name]['score']} \
-points, {len(info["player"][top_name]["achiv"])} achievements)")
+    top_score = info["player"][top_name].get("score", 0)
+    top_achiv_count = len(info["player"][top_name].get("achiv", set()))
+    print(f"Top performer: {top_name} ({top_score} points, "
+          f"{top_achiv_count} achievements)")
 
 
 if (__name__ == "__main__"):

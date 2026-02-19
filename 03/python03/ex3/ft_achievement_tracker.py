@@ -18,7 +18,7 @@ def achievement_analytics(lst_player: list) -> None:
     print(f"Rare achievements (1 player): {rare_lst}\n")
 
 
-def versus(player1: dict, player2: dict) -> None:
+def versus(player1: tuple, player2: tuple) -> None:
     same_lst = set()
     player1_lst = set()
     player2_lst = set()

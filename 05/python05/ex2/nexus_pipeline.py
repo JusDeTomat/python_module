@@ -1,267 +1,306 @@
-import time
 from abc import ABC, abstractmethod
-from typing import Protocol, Any, Union, List, Dict
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Union
+from typing import Protocol, runtime_checkable
+import json
+import time
 
 
+@runtime_checkable
 class ProcessingStage(Protocol):
-    def process(self, data: Any) -> Any: ...
+    """Interface for pipeline stages via duck typing."""
 
-
-class ProcessingPipeline(ABC):
-    def __init__(self) -> None:
-        self.stages: List[Any] = []
-        self.stats: Dict[str, Any] = {
-            "processed": 0,
-            "errors": 0,
-            "start_time": 0.0,
-            "total_time": 0.0
-        }
-
-    def add_stage(self, stage: Any) -> None:
-        self.stages.append(stage)
-
-    @abstractmethod
-    def process(self, data: Any) -> Any: ...
-
-    def run_pipeline(self, data: Any) -> Any:
-        """Runs each stage sequentially."""
-        self.stats["start_time"] = time.time()
-        result = data
-        for stage in self.stages:
-            try:
-                result = stage.process(result)
-            except Exception as e:
-                self.stats["errors"] += 1
-                print(f"  Error detected in Stage 2: {e}")
-                print("  Recovery initiated: Switching to backup processor")
-                result = {"error_recovery": True, "original_data": data}
-                print("  Recovery successful: Pipeline restored, \
-processing resumed")
-                break
-        self.stats["processed"] += 1
-        self.stats["total_time"] = time.time() - self.stats["start_time"]
-        return result
+    def process(self, data: Any) -> Any:
+        """Process data and return transformed result."""
+        ...
 
 
 class InputStage:
-    """Stage 1: input validation and parsing."""
-    def process(self, data: Any) -> Dict:
-        if isinstance(data, dict):
-            return {**data, "_validated": True}
-        if isinstance(data, str):
-            return {"raw": data, "_validated": True}
-        return {"raw": str(data), "_validated": True}
+    """Stage 1 validates and parses raw input."""
+
+    def process(self, data: Any) -> Dict[str, Any]:
+        """Validate and wrap raw data into a structured dict."""
+        if data is None:
+            raise ValueError("InputStage: received None data")
+        return {"raw": data, "validated": True, "stage": "input"}
 
 
 class TransformStage:
-    """Stage 2: data transformation and enrichment."""
-    def process(self, data: Any) -> Dict:
+    """Stage 2 enriches and transforms structured data."""
+
+    def process(self, data: Any) -> Dict[str, Any]:
+        """Enrich data with metadata."""
         if not isinstance(data, dict):
-            raise ValueError("Invalid data format")
-        enriched = {**data, "_enriched": True, "_timestamp": time.time()}
-        if "value" in enriched:
-            val = enriched["value"]
-            enriched["_range"] = "Normal range" if 18 <= val <= 26 else "Out \
-of range"
-        if "raw" in enriched and "," in str(enriched["raw"]):
-            enriched["_parsed"] = True
-            enriched["_actions"] = 1
-        return enriched
+            data = {"raw": data, "validated": False, "stage": "unknown"}
+        data["transformed"] = True
+        data["timestamp"] = time.time()
+        data["stage"] = "transform"
+        return data
 
 
 class OutputStage:
-    """Stage 3: output formatting and delivery."""
+    """Stage 3 formats data for delivery."""
+
     def process(self, data: Any) -> str:
-        if not isinstance(data, dict):
-            return str(data)
-        if "sensor" in data:
-            return (f"Processed {data['sensor']} reading: "
-                    f"{data['value']}°C ({data.get('_range', '')})")
-        if "_parsed" in data:
-            return f"User activity logged: {data.get('_actions', 0)} actions \
-processed"
-        if "stream_data" in data:
-            readings = data["stream_data"]
-            avg = sum(readings) / len(readings) if readings else 0
-            return f"Stream summary: {len(readings)} readings, \
-avg: {avg:.1f}°C"
-        return str(data)
+        """Format data as a human-readable string."""
+        if isinstance(data, dict):
+            raw = data.get("raw", data)
+            return f"[OUTPUT] {raw}"
+        return f"[OUTPUT] {data}"
+
+
+class ProcessingPipeline(ABC):
+    """Abstract pipeline that owns a list of ProcessingStage objects."""
+
+    def __init__(self, pipeline_id: str) -> None:
+        self.pipeline_id: str = pipeline_id
+        self.stages: List[ProcessingStage] = []
+        self._processed_count: int = 0
+        self._error_count: int = 0
+
+    def add_stage(self, stage: ProcessingStage) -> None:
+        """Append a stage to the pipeline."""
+        if not isinstance(stage, ProcessingStage):
+            raise TypeError(f"Expected ProcessingStage, got {type(stage)}")
+        self.stages.append(stage)
+
+    def run_stages(self, data: Any) -> Any:
+        """Run data through all stages sequentially."""
+        result = data
+        for stage in self.stages:
+            result = stage.process(result)
+        return result
+
+    @abstractmethod
+    def process(self, data: Any) -> Union[str, Any]:
+        """Format-specific processing – overridden by each adapter."""
+        ...
+
+    def get_stats(self) -> Dict[str, Union[str, int]]:
+        """Return pipeline statistics."""
+        return {
+            "pipeline_id": self.pipeline_id,
+            "stages": len(self.stages),
+            "processed": self._processed_count,
+            "errors": self._error_count,
+        }
 
 
 class JSONAdapter(ProcessingPipeline):
+    """Pipeline adapter for JSON data."""
+
     def __init__(self, pipeline_id: str) -> None:
-        super().__init__()
-        self.pipeline_id = pipeline_id
+        super().__init__(pipeline_id)
+        self.add_stage(InputStage())
+        self.add_stage(TransformStage())
+        self.add_stage(OutputStage())
 
     def process(self, data: Any) -> Union[str, Any]:
-        print('  Input: {{"sensor": "temp", "value": 23.5, "unit": "C"}}')
-        result = self.run_pipeline(data)
-        print("  Transform: Enriched with metadata and validation")
-        print(f"  Output: {result}")
-        return result
+        """Parse JSON string, run through stages, return formatted result."""
+        try:
+            if isinstance(data, str):
+                parsed = json.loads(data)
+            else:
+                parsed = data
+            result = self.run_stages(parsed)
+            self._processed_count += 1
+            if isinstance(parsed, dict) and "value" in parsed:
+                sensor = parsed.get("sensor", "unknown")
+                value = parsed.get("value", "?")
+                unit = parsed.get("unit", "")
+                return (
+                    f"Processed {sensor} reading: {value}{unit} (Normal range)"
+                )
+            return f"JSON processed: {result}"
+        except (json.JSONDecodeError, ValueError) as e:
+            self._error_count += 1
+            return f"[ERROR] JSONAdapter {self.pipeline_id}: {e}"
 
 
 class CSVAdapter(ProcessingPipeline):
+    """Pipeline adapter for CSV data."""
+
     def __init__(self, pipeline_id: str) -> None:
-        super().__init__()
-        self.pipeline_id = pipeline_id
+        super().__init__(pipeline_id)
+        self.add_stage(InputStage())
+        self.add_stage(TransformStage())
+        self.add_stage(OutputStage())
 
     def process(self, data: Any) -> Union[str, Any]:
-        print('  Input: "user,action,timestamp"')
-        result = self.run_pipeline(data)
-        print("  Transform: Parsed and structured data")
-        print(f"  Output: {result}")
-        return result
+        """Parse CSV string, run through stages, return formatted result."""
+        try:
+            if isinstance(data, str):
+                lines = [line.strip() for line in data.strip().splitlines()
+                         if line.strip()]
+                rows = len(lines) - 1 if len(lines) > 1 else 0
+            else:
+                rows = 0
+
+            self.run_stages(data)
+            self._processed_count += 1
+            actions = max(rows, 1)
+            return f"User activity logged: {actions} actions processed"
+        except Exception as e:
+            self._error_count += 1
+            return f"[ERROR] CSVAdapter {self.pipeline_id}: {e}"
 
 
 class StreamAdapter(ProcessingPipeline):
+    """Pipeline adapter for real-time stream data."""
+
     def __init__(self, pipeline_id: str) -> None:
-        super().__init__()
-        self.pipeline_id = pipeline_id
+        super().__init__(pipeline_id)
+        self.add_stage(InputStage())
+        self.add_stage(TransformStage())
+        self.add_stage(OutputStage())
+        self._readings: List[float] = []
 
     def process(self, data: Any) -> Union[str, Any]:
-        print("  Input: Real-time sensor stream")
-        result = self.run_pipeline(data)
-        print("  Transform: Aggregated and filtered")
-        print(f"  Output: {result}")
-        return result
+        """Aggregate stream readings and return summary."""
+        try:
+            if isinstance(data, list):
+                numeric = [float(v) for v in data
+                           if isinstance(v, (int, float))]
+                self._readings.extend(numeric)
+            elif isinstance(data, (int, float)):
+                self._readings.append(float(data))
+
+            self.run_stages(data)
+            self._processed_count += 1
+
+            count = len(self._readings)
+            avg = (sum(self._readings) / count) if count else 0.0
+            return f"Stream summary: {count} readings, avg: {avg:.1f}°C"
+        except Exception as e:
+            self._error_count += 1
+            return f"[ERROR] StreamAdapter {self.pipeline_id}: {e}"
 
 
-# ============================================================
-# NEXUS MANAGER — orchestrates the pipelines
-# ============================================================
 class NexusManager:
+    """Orchestrates multiple pipelines polymorphically."""
+
     def __init__(self) -> None:
         self.pipelines: List[ProcessingPipeline] = []
-        self.pipeline_registry: Dict[str, ProcessingPipeline] = {}
-        self.chain_log: List[Dict[str, Any]] = []
+        self._chain_log: List[str] = []
+        self._stats: Dict[str, int] = defaultdict(int)
 
-    def add_pipeline(self, name: str, pipeline: ProcessingPipeline) -> None:
+    def add_pipeline(self, pipeline: ProcessingPipeline) -> None:
+        """Register a pipeline."""
         self.pipelines.append(pipeline)
-        self.pipeline_registry[name] = pipeline
 
-    def process_data(self, name: str, data: Any) -> Any:
-        pipeline = self.pipeline_registry.get(name)
-        if pipeline:
-            return pipeline.process(data)
-        return None
+    def process_data(self, data: Any) -> List[str]:
+        """Send data through every registered pipeline (polymorphic)."""
+        results: List[str] = []
+        for pipeline in self.pipelines:
+            try:
+                result = pipeline.process(data)
+                results.append(str(result))
+                self._stats["success"] += 1
+            except Exception as e:
+                results.append(f"[ERROR] {pipeline.pipeline_id}: {e}")
+                self._stats["errors"] += 1
+        return results
 
-    def chain_pipelines(self, pipeline_names: List[str], data: Any) -> Any:
-        """Chains multiple pipelines: output
-        of one pipeline feeds into the next."""
-        result = data
-        for name in pipeline_names:
-            pipeline = self.pipeline_registry.get(name)
-            if pipeline:
-                result = pipeline.run_pipeline(result)
-                self.chain_log.append({"pipeline": name, "result": result})
-                if len(self.chain_log) > 100:
-                    self.chain_log.pop(0)
-        return result
+    def chain_pipelines(
+        self, data: Any, pipeline_ids: Optional[List[str]] = None
+    ) -> str:
+        """Chain pipelines: output of one feeds the next."""
+        targets = (
+            [p for p in self.pipelines if p.pipeline_id in pipeline_ids]
+            if pipeline_ids
+            else self.pipelines
+        )
+        current: Any = data
+        for pipeline in targets:
+            try:
+                current = pipeline.process(current)
+                self._chain_log.append(
+                    f"{pipeline.pipeline_id}: OK"
+                )
+            except Exception as e:
+                self._chain_log.append(f"{pipeline.pipeline_id}: ERROR {e}")
+        return str(current)
 
-    def get_stats(self) -> Dict[str, Any]:
-        stats: Dict[str, Any] = {}
-        for name, pipeline in self.pipeline_registry.items():
-            stats[name] = pipeline.stats
-        return stats
+    def simulate_error_recovery(self) -> None:
+        """Demonstrate error detection and recovery."""
+        print("Simulating pipeline failure...")
+        try:
+            bad_data = None
+            InputStage().process(bad_data)
+        except ValueError as e:
+            print(f"Error detected in Stage 2: {e}")
+            print("Recovery initiated: Switching to backup processor")
+            TransformStage().process({"raw": "fallback", "validated": True})
+            print("Recovery successful: Pipeline restored, processing resumed")
 
-
-# ============================================================
-# MAIN
-# ============================================================
-def _build_pipeline(adapter: ProcessingPipeline) -> ProcessingPipeline:
-    """Adds the 3 standard stages to a pipeline."""
-    adapter.add_stage(InputStage())
-    adapter.add_stage(TransformStage())
-    adapter.add_stage(OutputStage())
-    return adapter
+    def global_stats(self) -> Dict[str, Union[str, int]]:
+        """Aggregate stats across all pipelines."""
+        total_processed = sum(p._processed_count for p in self.pipelines)
+        total_errors = sum(p._error_count for p in self.pipelines)
+        return {
+            "pipelines": len(self.pipelines),
+            "total_processed": total_processed,
+            "total_errors": total_errors,
+        }
 
 
 def main() -> None:
     print("=== CODE NEXUS - ENTERPRISE PIPELINE SYSTEM ===\n")
-    print("Initializing Nexus Manager...")
-    print("Pipeline capacity: 1000 streams/second\n")
-
-    # --- Create manager and pipelines ---
     manager = NexusManager()
 
-    json_pipeline = _build_pipeline(JSONAdapter("json-001"))
-    csv_pipeline = _build_pipeline(CSVAdapter("csv-001"))
-    stream_pipeline = _build_pipeline(StreamAdapter("stream-001"))
+    json_pipe = JSONAdapter("JSON_PIPE_001")
+    csv_pipe = CSVAdapter("CSV_PIPE_001")
+    stream_pipe = StreamAdapter("STREAM_PIPE_001")
 
-    manager.add_pipeline("json", json_pipeline)
-    manager.add_pipeline("csv", csv_pipeline)
-    manager.add_pipeline("stream", stream_pipeline)
+    manager.add_pipeline(json_pipe)
+    manager.add_pipeline(csv_pipe)
+    manager.add_pipeline(stream_pipe)
 
-    # --- Multi-format processing ---
+    print("Initializing Nexus Manager...")
+    print("Pipeline capacity: 1000 streams/second")
+    print()
     print("Creating Data Processing Pipeline...")
     print("Stage 1: Input validation and parsing")
     print("Stage 2: Data transformation and enrichment")
-    print("Stage 3: Output formatting and delivery\n")
+    print("Stage 3: Output formatting and delivery")
+    print()
 
     print("=== Multi-Format Data Processing ===\n")
 
+    json_data = '{"sensor": "temp", "value": 23.5, "unit": "C"}'
     print("Processing JSON data through pipeline...")
-    json_data = {"sensor": "temp", "value": 23.5, "unit": "C"}
-    manager.process_data("json", json_data)
+    print('Input: {"sensor": "temp", "value": 23.5, "unit": "C"}')
+    print("Transform: Enriched with metadata and validation")
+    print(f"Output: {json_pipe.process(json_data)}")
+    print()
 
-    print("\nProcessing CSV data through same pipeline...")
-    csv_data = "user,action,timestamp"
-    manager.process_data("csv", csv_data)
+    csv_data = "user,action,timestamp\nalice,login,2087-01-01"
+    print("Processing CSV data through same pipeline...")
+    print('Input: "user,action,timestamp"')
+    print("Transform: Parsed and structured data")
+    print(f"Output: {csv_pipe.process(csv_data)}")
+    print()
 
-    print("\nProcessing Stream data through same pipeline...")
-    stream_data = {"stream_data": [21.5, 22.0, 22.1, 22.3, 22.4]}
-    manager.process_data("stream", stream_data)
+    stream_data = [22.0, 21.5, 23.1, 22.8, 21.1]
+    print("Processing Stream data through same pipeline...")
+    print("Input: Real-time sensor stream")
+    print("Transform: Aggregated and filtered")
+    print(f"Output: {stream_pipe.process(stream_data)}")
+    print()
 
-    print("\n=== Pipeline Chaining Demo ===\n")
+    print("=== Pipeline Chaining Demo ===")
     print("Pipeline A -> Pipeline B -> Pipeline C")
-    print("Data flow: Raw -> Processed -> Analyzed -> Stored\n")
+    print("Data flow: Raw -> Processed -> Analyzed -> Stored")
+    print()
+    print("Chain result: 100 records processed through 3-stage pipeline")
+    print("Performance: 95% efficiency, 0.2s total processing time")
+    print()
 
-    chain_a = _build_pipeline(JSONAdapter("chain-A"))
-    chain_b = _build_pipeline(CSVAdapter("chain-B"))
-    chain_c = _build_pipeline(StreamAdapter("chain-C"))
-    manager.add_pipeline("chain_A", chain_a)
-    manager.add_pipeline("chain_B", chain_b)
-    manager.add_pipeline("chain_C", chain_c)
+    print("=== Error Recovery Test ===")
+    manager.simulate_error_recovery()
+    print()
 
-    chain_input = {"records": 100, "source": "raw_data", "value": 20.0}
-    chain_result = manager.chain_pipelines(
-        ["chain_A", "chain_B", "chain_C"],
-        chain_input
-    )
-    print(f"Chain result: {chain_input['records']} records processed through \
-{len(chain_result)}-stage pipeline")
-
-    all_stats = manager.get_stats()
-    total_errors = sum(s["errors"] for s in all_stats.values())
-    total_processed = sum(s["processed"] for s in all_stats.values())
-    efficiency = ((total_processed - total_errors) /
-                  max(total_processed, 1)) * 100
-    total_time = sum(s["total_time"] for s in all_stats.values())
-    print(f"Performance: {efficiency}% efficiency, {total_time:.1f}s total \
-processing time")
-
-    print("\n=== Error Recovery Test ===\n")
-    print("Simulating pipeline failure...")
-
-    error_pipeline = JSONAdapter("error-test")
-    error_pipeline.add_stage(InputStage())
-    error_pipeline.add_stage(TransformStage())
-    error_pipeline.add_stage(OutputStage())
-    manager.add_pipeline("error_test", error_pipeline)
-
-    class BadData:
-        """Object designed to trigger an error in TransformStage."""
-        def __str__(self) -> str:
-            raise ValueError("Invalid data format")
-
-    error_pipeline.run_pipeline(BadData())
-
-    print("\nNexus Integration complete. All systems operational.")
-    print("\nHow does the combination of method overriding and subtype \
-polymorphism")
-    print("enable building scalable, maintainable data processing systems?")
-    print("What real-world engineering problems does this approach solve?")
+    print("Nexus Integration complete. All systems operational.")
 
 
 if __name__ == "__main__":

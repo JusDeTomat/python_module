@@ -3,6 +3,7 @@ import sys
 
 def commande() -> None:
     arg = [x for x in sys.argv]
+    print("=== Command Quest ===")
     try:
         if (len(arg) == 1):
             raise ValueError("No arguments provided!")
