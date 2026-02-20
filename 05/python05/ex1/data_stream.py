@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Any, List, Dict, Union, Optional
+from typing import Any, List, Dict, Union, Optional, Tuple
 from abc import ABC, abstractmethod
 
 
@@ -35,14 +35,16 @@ class SensorStream(DataStream):
         from a batch of sensor readings."""
         temps = self.filter_data(data_batch, "temp:")
         parsed = []
+        malformed = 0
         for item in temps:
             try:
                 parsed.append(float(item.split(":")[1]))
             except (ValueError, IndexError):
-                pass
+                malformed += 1
         avg_temp = sum(parsed) / len(parsed) if parsed else 0
+        extra = f" ({malformed} malformed)" if malformed else ""
         return (f"Sensor analysis: {len(data_batch)} readings processed, "
-                f"avg temp: {avg_temp}°C")
+                f"avg temp: {avg_temp}°C{extra}")
 
     def filter_data(self, data_batch: List[Any],
                     criteria: Optional[str] = None) -> List[Any]:
@@ -65,6 +67,7 @@ class TransactionStream(DataStream):
         buy_total = 0
         sell_total = 0
         data_batch = self.filter_data(data_batch, "buy")
+        malformed = 0
         for element in data_batch:
             if isinstance(element, str):
                 try:
@@ -73,11 +76,12 @@ class TransactionStream(DataStream):
                     elif "sell:" in element:
                         sell_total += int(element.split(":")[1])
                 except (ValueError, IndexError):
-                    pass
+                    malformed += 1
         net_flow = buy_total - sell_total
         sign = "+" if net_flow >= 0 else ""
+        extra = f" ({malformed} malformed)" if malformed else ""
         return (f"Transaction analysis: {len(data_batch)} operations, "
-                f"net flow: {sign}{net_flow} units")
+                f"net flow: {sign}{net_flow} units{extra}")
 
     def filter_data(self, data_batch: List[Any],
                     criteria: Optional[str] = None) -> List[Any]:
@@ -100,7 +104,7 @@ class EventStream(DataStream):
         """Count the number of errors detected within a batch of events."""
         errors = self.filter_data(data_batch, "error")
         return (f"Event analysis: {len(data_batch)} events, "
-                f"{len(errors)} error detected")
+                f"{len(errors)} errors detected")
 
     def filter_data(self, data_batch: List[Any],
                     criteria: Optional[str] = None) -> List[Any]:
@@ -119,7 +123,7 @@ class StreamProcessor:
 
     def __init__(self) -> None:
         """Initialize the processor with an empty list of streams."""
-        self.streams: List[tuple] = []
+        self.streams: List[Tuple[DataStream, List[Any]]] = []
 
     def add_stream(self, stream: DataStream, data: List[Any]) -> None:
         """Register a new stream and its associated data for processing."""
@@ -131,12 +135,13 @@ class StreamProcessor:
         print("Processing mixed stream types through unified interface...\n")
         print("Batch 1 Results:")
         for stream, data in self.streams:
-            if isinstance(stream, SensorStream):
-                print(f"- Sensor data: {len(data)} readings processed")
-            elif isinstance(stream, TransactionStream):
-                print(f"- Transaction data: {len(data)} operations processed")
-            elif isinstance(stream, EventStream):
-                print(f"- Event data: {len(data)} events processed")
+            try:
+                result = stream.process_batch(data)
+            except Exception as e:
+                print(f"- Error processing stream"
+                      f" {getattr(stream, 'stream_id', '')}: {e}")
+            else:
+                print(f"- {result}")
 
     def filter_streams(self, data: List[str]) -> None:
         """Extract and count high-priority alerts and
