@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 def list_comprehension(info):
     high_scorers = [name for name, data in info.items()
                     if data.get("score", 0) > 2000]

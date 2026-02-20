@@ -40,7 +40,7 @@ def prime_gen(n: int) -> bool:
 
 
 if (__name__ == "__main__"):
-    nb: int = 10000000
+    nb: int = 1000
     nb_fibo: int = 10
     nb_prime: int = 5
     fibo_lst: list = []
