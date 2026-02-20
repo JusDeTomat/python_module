@@ -1,10 +1,10 @@
 def create_new_archive():
     filename = "new_discovery.txt"
-    print("=== CYBER ARCHIVES - PRESERVATION SYSTEM ===")
+    print("=== CYBER ARCHIVES - PRESERVATION SYSTEM ===\n")
     print(f"Initializing new storage unit: {filename}")
     try:
         vault = open(filename, "w")
-        print("Storage unit created successfully...")
+        print("Storage unit created successfully...\n")
         entries = [
             "[ENTRY 001] New quantum algorithm discovered",
             "[ENTRY 002] Efficiency increased by 347%",
@@ -15,7 +15,7 @@ def create_new_archive():
             vault.write(entry + "\n")
             print(entry)
         vault.close()
-        print("Data inscription complete. Storage unit sealed.")
+        print("\nData inscription complete. Storage unit sealed.")
         print(f"Archive '{filename}' ready for long-term preservation.")
     except Exception as e:
         print(f"CRITICAL ERROR: Failed to initialize storage unit. {e}")

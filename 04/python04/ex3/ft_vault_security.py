@@ -9,7 +9,7 @@ def vault_security_operations():
         with open(classified_source, "r") as vault_in:
             print("SECURE EXTRACTION:")
             content = vault_in.read()
-            print(content.strip())
+            print(content)
         with open(security_log, "w") as vault_out:
             print("\nSECURE PRESERVATION:")
             entry = "[CLASSIFIED] New security protocols archived"
