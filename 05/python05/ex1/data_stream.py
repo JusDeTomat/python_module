@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
-
 from typing import Any, List, Dict, Union, Optional, Tuple
 from abc import ABC, abstractmethod
 
 
 class DataStream(ABC):
-    """Abstract base class to represent a generic data stream interface."""
+    """Abstract base class to represent a generic
+    data stream interface."""
 
     def __init__(self, stream_id: str) -> None:
         """Initialize the data stream with a unique identifier."""
@@ -17,7 +16,7 @@ class DataStream(ABC):
         pass
 
     def filter_data(self, data_batch: List[Any],
-                    criteria: Optional[str] = None) -> List[Any]:
+                    criteria: str = None) -> List[Any]:
         """Filter the input batch based on a specific string criterion."""
         return [item for item in data_batch
                 if isinstance(item, str) and criteria in item]
@@ -47,9 +46,8 @@ class SensorStream(DataStream):
                 f"avg temp: {avg_temp}°C{extra}")
 
     def filter_data(self, data_batch: List[Any],
-                    criteria: Optional[str] = None) -> List[Any]:
-        """Filter sensor data specifically for
-        strings containing the criteria."""
+                    criteria: str = None) -> List[Any]:
+        """Filter the input batch based on a specific string criterion."""
         return [item for item in data_batch
                 if isinstance(item, str) and criteria in item]
 
@@ -66,7 +64,6 @@ class TransactionStream(DataStream):
         """Analyze buy/sell operations to determine the net financial flow."""
         buy_total = 0
         sell_total = 0
-        data_batch = self.filter_data(data_batch, "buy")
         malformed = 0
         for element in data_batch:
             if isinstance(element, str):
@@ -84,7 +81,7 @@ class TransactionStream(DataStream):
                 f"net flow: {sign}{net_flow} units{extra}")
 
     def filter_data(self, data_batch: List[Any],
-                    criteria: Optional[str] = None) -> List[Any]:
+                    criteria: str = None) -> List[Any]:
         """Filter data to include only relevant financial transaction tags."""
         return [item for item in data_batch
                 if isinstance(item, str)
