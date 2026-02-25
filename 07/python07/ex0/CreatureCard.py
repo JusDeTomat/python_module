@@ -1,4 +1,4 @@
-from __init__ import Card
+from .Card import Card
 
 
 class CreatureCard(Card):
@@ -12,9 +12,11 @@ class CreatureCard(Card):
         self.type = "Creature"
 
     def play(self, game_state: dict) -> dict:
-        print(f"Playing {self.name} with {game_state.get("mana", 0)} "
+        print(f"Drew: {self.name} ({self.type})")
+        print(f"Playing {self.name} with {game_state.get('mana', 0)}"
               "mana available:\n"
-              f"Playable: {self.is_playable(game_state.get("mana", 0))}")
+              f"Playable: {self.is_playable(game_state.get('mana', 0))}")
+              
         return {"card_played": self.name, 'mana_used': self.cost,
                 "effect": 'Creature summoned to battlefield'}
 
@@ -24,7 +26,7 @@ class CreatureCard(Card):
                 "health": self.attack}
 
     def attack_target(self, target: dict) -> dict:
-        print(f"{self.name} attacks {target.get("name", "enemy")}:")
-        return {'attacker': self.name, 'target': target.get("name", "enemy"),
+        print(f"{self.name} attacks {target.get('name', 'enemy')}:")
+        return {'attacker': self.name, 'target': target.get('name', 'enemy'),
                 'damage_dealt': self.attack,
-                'combat_resolved': (target.get("hp", 0) - self.attack <= 0)}
+                'combat_resolved': (target.get('hp', 0) - self.attack <= 0)}

@@ -294,8 +294,13 @@ def main() -> None:
     print("Pipeline A -> Pipeline B -> Pipeline C")
     print("Data flow: Raw -> Processed -> Analyzed -> Stored")
     print()
-    print("Chain result: 100 records processed through 3-stage pipeline")
-    print("Performance: 95% efficiency, 0.2s total processing time")
+    chain_data = '{"sensor": "temp", "value": 30.0, "unit": "C"}'
+    chain_result = manager.chain_pipelines(
+        chain_data,
+        ["JSON_PIPE_001", "CSV_PIPE_001", "STREAM_PIPE_001"]
+    )
+    print(f"Chain result: {chain_result}")
+    print()
     print()
 
     print("=== Error Recovery Test ===")
