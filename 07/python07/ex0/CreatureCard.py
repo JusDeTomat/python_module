@@ -1,4 +1,4 @@
-from .Card import Card
+from ex0.Card import Card
 
 
 class CreatureCard(Card):
@@ -16,7 +16,6 @@ class CreatureCard(Card):
         print(f"Playing {self.name} with {game_state.get('mana', 0)}"
               "mana available:\n"
               f"Playable: {self.is_playable(game_state.get('mana', 0))}")
-              
         return {"card_played": self.name, 'mana_used': self.cost,
                 "effect": 'Creature summoned to battlefield'}
 

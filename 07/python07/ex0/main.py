@@ -1,4 +1,4 @@
-from __init__ import CreatureCard
+from ex0.CreatureCard import CreatureCard
 
 
 def main():
