@@ -1,9 +1,9 @@
 from alchemy.elements import create_fire, create_earth
 
 
-def lead_to_gold():
+def lead_to_gold() -> None:
     return f"Lead transmuted to gold using {create_fire()}"
 
 
-def stone_to_gem():
+def stone_to_gem() -> None:
     return f"Stone transmuted to gem using {create_earth()}"

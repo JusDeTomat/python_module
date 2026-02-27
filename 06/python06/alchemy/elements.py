@@ -1,14 +1,14 @@
-def create_fire():
+def create_fire() -> None:
     return "Fire element created"
 
 
-def create_water():
+def create_water() -> None:
     return "Water element created"
 
 
-def create_earth():
+def create_earth() -> None:
     return "Earth element created"
 
 
-def create_air():
+def create_air() -> None:
     return "Air element created"

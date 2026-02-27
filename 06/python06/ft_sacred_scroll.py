@@ -1,8 +1,8 @@
 import alchemy.elements as ae
-import alchemy.__init__ as init
+import alchemy as init
 
 
-def main():
+def main() -> None:
     print("=== Sacred Scroll Mastery ===\n")
     print("Testing direct module access:")
     print(f"alchemy.elements.create_fire(): {ae.create_fire()}\n"
@@ -10,9 +10,9 @@ def main():
           f"alchemy.elements.create_earth(): {ae.create_earth()}\n"
           f"alchemy.elements.create_air(): {ae.create_air()}")
     print("\nTesting package-level access (controlled by __init__.py):")
-    lst = []
-    lst_fonc = ["create_fire", "create_water", "create_earth",
-                "create_air"]
+    lst: list = []
+    lst_fonc: list = ["create_fire", "create_water", "create_earth",
+                      "create_air"]
     for element in lst_fonc:
         try:
             function = getattr(init, element)
