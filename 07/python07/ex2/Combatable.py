@@ -6,7 +6,7 @@ class Combatable(ABC):
     def attack(self, target) -> dict:
         pass
 
-    @abstractmethod	
+    @abstractmethod
     def defend(self, incoming_damage: int) -> dict:
         pass
 
