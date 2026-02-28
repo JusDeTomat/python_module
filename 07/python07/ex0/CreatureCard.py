@@ -22,7 +22,7 @@ class CreatureCard(Card):
     def get_card_info(self):
         return {"name": self.name, "cost": self.cost, "rarity": self.rarity,
                 "type": self.type, "attack": self.attack,
-                "health": self.attack}
+                "health": self.health}
 
     def attack_target(self, target: dict) -> dict:
         print(f"{self.name} attacks {target.get('name', 'enemy')}:")
