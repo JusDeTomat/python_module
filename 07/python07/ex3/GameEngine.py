@@ -27,7 +27,7 @@ class GameEngine():
         hand: dict[Any, Any] = self.factory.create_themed_deck(5)
         hand2: dict[Any, Any] = self.factory.create_themed_deck(5)
         self.nb_created_card = len(hand) * 3
-        
+
         print(f"Strategy: {self.strategy.get_strategy_name()}")
         print(f"Actions: {self.strategy.execute_turn(hand, hand2)}")
 
