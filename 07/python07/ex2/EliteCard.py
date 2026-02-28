@@ -109,7 +109,7 @@ class EliteCard(Card, Combatable, Magical):
             f"Defense result: {self.defend(game_state.get('dr', 0))}\n"
         )
         result_cast_spell = self.cast_spell(
-            game_state.get('scs', 'spell'), game_state.get('ase', [])
+            game_state.get('scs', 'spell'), game_state.get('sce', [])
         )
         print(
             "Magic phase:\n"
