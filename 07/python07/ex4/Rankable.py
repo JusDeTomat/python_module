@@ -2,18 +2,20 @@ from abc import abstractmethod, ABC
 
 
 class Rankable(ABC):
-    @abstractmethod
-    def calculate_rating(self):
-        pass
+    """Interface for objects that can be ranked / rated."""
 
     @abstractmethod
-    def update_wins(self, wins: int):
-        pass
+    def calculate_rating(self) -> int:
+        """Compute and return the current rating for the object."""
 
     @abstractmethod
-    def update_losses(self, losses: int):
-        pass
+    def update_wins(self, wins: int) -> None:
+        """Update internal state for additional wins."""
 
     @abstractmethod
-    def get_rank_info(self):
-        pass
+    def update_losses(self, losses: int) -> None:
+        """Update internal state for additional losses."""
+
+    @abstractmethod
+    def get_rank_info(self) -> int:
+        """Return a compact rank/info integer (e.g. ELO or similar)."""

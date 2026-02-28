@@ -2,7 +2,8 @@
 from ex2.EliteCard import EliteCard
 
 
-def main():
+def main() -> None:
+    """Demo showing EliteCard multi-interface behavior."""
     print("=== DataDeck Ability System ===\n\n"
           "EliteCard capabilities:\n"
           "- Card: ['play', 'get_card_info', 'is_playable']\n"
@@ -14,7 +15,7 @@ def main():
         'dr': 5,
         'scs': 'Fireball',
         'sce': ['Enemy1', 'Enemy2'],
-        'mc': 3
+        'mc': 3,
     })
     print("Multiple interface implementation successful!")
 

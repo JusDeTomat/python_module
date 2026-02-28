@@ -3,7 +3,8 @@ from ex3.GameEngine import GameEngine
 from ex3.AggressiveStrategy import AggressiveStrategy
 
 
-def main():
+def main() -> None:
+    """Configure a sample engine and run a turn to demonstrate patterns."""
     try:
         print("=== DataDeck Game Engine ===\n\n"
               "Configuring Fantasy Card Game...")

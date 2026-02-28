@@ -5,6 +5,7 @@ from ex1.ArtifactCard import ArtifactCard
 
 
 def main() -> None:
+    """Demonstrate adding cards to a deck and playing a card."""
     print("=== DataDeck Deck Builder ===\n\n"
           "Drawing and playing cards:")
     deck = Deck()

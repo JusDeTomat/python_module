@@ -3,6 +3,7 @@ from ex4.TournamentCard import TournamentCard
 
 
 def main() -> None:
+    """Run a small tournament demonstration using two sample cards."""
     try:
         print("=== DataDeck Tournament Platform ===")
 

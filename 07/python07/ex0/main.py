@@ -1,7 +1,8 @@
 from ex0.CreatureCard import CreatureCard
 
 
-def main():
+def main() -> None:
+    """Small demo to exercise CreatureCard behavior."""
     dragon = CreatureCard("Fire Dragon", 5, "'Legendary", 7, 5)
 
     print(f"=== DataDeck Card Foundation ===\n"
