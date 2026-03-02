@@ -23,7 +23,6 @@ class TournamentCard(Card, Combatable, Rankable):
         rating: int,
     ) -> None:
         """Initialize a TournamentCard.
-
         Args:
             name: Card name.
             cost: Mana cost.
@@ -48,7 +47,6 @@ class TournamentCard(Card, Combatable, Rankable):
 
         Returns a new mapping containing the updated state keys.
         """
-        # Use mapping merge (requires Python 3.9+)
         return game_state | {
             "name": self.name,
             "mana_used": self.cost,
