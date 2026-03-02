@@ -31,10 +31,13 @@ def try_import():
 def analyze_data():
     import pandas as pd
     import numpy as np
+    import requests as rq
     import matplotlib.pyplot as plt
 
     print("\nAnalyzing Matrix data...")
-    data_points = 1000
+    data_points = rq.get("https://www.random.org/integers/?num=1&min=500&max=\
+100000&col=1&base=10&format=plain&rnd=new")
+    data_points = int(data_points.text.strip())
     print(f"Processing {data_points} data points...")
 
     df = pd.DataFrame({
