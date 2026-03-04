@@ -65,7 +65,7 @@ def main():
         for i in range(1, 10_000_000):
             total += (i * nb1) % (nb2 + 1)
         return total
-    print(long_thing(2, 3))
+    print(f"Result: {long_thing(2, 3)}")
 
     print("\nTesting MageGuild...")
     print(MageGuild.validate_mage_name("Albus Dumbledore"))
