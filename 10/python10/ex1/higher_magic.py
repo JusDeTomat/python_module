@@ -6,7 +6,7 @@ def spell_combiner(spell1: callable, spell2: callable) -> callable:
 
 def power_amplifier(base_spell: callable, multiplier: int) -> callable:
     def power(nb: int) -> int:
-        return sum([base_spell(nb) for _ in range(multiplier)])
+        return sum([base_spell(nb) * multiplier])
     return power
 
 

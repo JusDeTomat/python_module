@@ -18,12 +18,15 @@ def spell_transformer(spells: list[str]) -> list[str]:
 
 def mage_stats(mages: list[dict]) -> dict:
     lst_power = list(map(lambda x: x.get("power", 0), mages))
-    avg = sum(lst_power) / len(mages)
-    return {
-        'max_power': max(lst_power),
-        'min_power': min(lst_power),
-        'avg_power': round(avg, 2)
-        }
+    try:
+        avg = sum(lst_power) / len(mages)
+        return {
+            'max_power': max(lst_power),
+            'min_power': min(lst_power),
+            'avg_power': round(avg, 2)
+            }
+    except ZeroDivisionError:
+        return {}
 
 
 def main() -> None:
