@@ -25,10 +25,10 @@ def spell_sequence(spells: list[callable]) -> callable:
 
 
 def main() -> None:
-    def fireball(target):
+    def fireball(target: str) -> str:
         return f"Fireball hits {target}"
 
-    def heal(target):
+    def heal(target: str) -> str:
         return f"Heals {target}"
 
     def amplifier(nb: int) -> int:
